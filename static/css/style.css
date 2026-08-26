@@ -105,3 +105,12 @@ body {
   color: #fff;
 }
 .kd-modal-header .btn-close { filter: invert(1); }
+
+/* Print-friendly record lists (e.g. registered students) */
+@media print {
+  .kd-navbar, .no-print, .modal, .alert { display: none !important; }
+  body, .kd-bg { background: #fff !important; }
+  .kd-table-wrap { box-shadow: none; padding: 0; }
+  .table thead { background: #e9ecef !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .table thead th { color: #000 !important; }
+}
