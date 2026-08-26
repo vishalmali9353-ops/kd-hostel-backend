@@ -16,7 +16,6 @@ from modules import MODULES
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Allow the GitHub Pages frontend to call this API/backend with credentials
 CORS(app, supports_credentials=True, origins=[app.config["FRONTEND_ORIGIN"]])
 
 mongo = PyMongo(app)
@@ -165,6 +164,28 @@ def api_register():
 
     result = db.students.insert_one(student)
     return {"success": True, "message": "Registration successful!", "id": str(result.inserted_id)}, 201
+
+
+@app.route("/setup-faculty-kdhostel2026")
+def setup_faculty():
+    accounts = [
+        {"username": "YRP", "password": "YRP@KDP"},
+        {"username": "NAP", "password": "NAP@KDP"},
+        {"username": "MRT", "password": "MRT@KDP"},
+        {"username": "NJP", "password": "NJP@KDP"},
+        {"username": "CDP", "password": "CDP@KDP"},
+    ]
+    created = []
+    for acc in accounts:
+        if not db.users.find_one({"username": acc["username"]}):
+            db.users.insert_one({
+                "username": acc["username"],
+                "password": generate_password_hash(acc["password"]),
+                "role": "admin",
+                "created_at": datetime.utcnow(),
+            })
+            created.append(acc["username"])
+    return {"created_accounts": created, "message": "Done! You can now delete this route."}
 
 
 if __name__ == "__main__":
