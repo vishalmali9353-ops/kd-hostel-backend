@@ -69,8 +69,13 @@ MODULES = {
         "icon": "bi-megaphone",
         "fields": [
             {"name": "title", "label": "Title", "type": "text", "required": True},
-            {"name": "content", "label": "Content", "type": "textarea", "required": True},
+            {"name": "content", "label": "Description", "type": "textarea", "required": True},
             {"name": "date", "label": "Date", "type": "date", "required": True},
+            {"name": "faculty_name", "label": "Faculty Name", "type": "text", "required": True},
+            {"name": "category", "label": "Category", "type": "select",
+             "choices": ["General", "Academic", "Exam", "Event", "Hostel Rules", "Urgent"],
+             "required": True},
+            {"name": "pinned", "label": "Pin to Top", "type": "checkbox", "required": False},
         ],
     },
 }
