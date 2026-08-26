@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Faculty Login | K.D. Hostel{% endblock %}
+{% block content %}
+<div class="auth-wrapper d-flex align-items-center justify-content-center">
+  <div class="auth-card shadow-lg">
+    <div class="auth-brand text-center">
+      <i class="bi bi-building"></i>
+      <h4 class="mt-2 mb-0">K.D. HOSTEL</h4>
+      <p class="text-muted small">Faculty Login — Authorised Access Only</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}" class="mt-4">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+        </div>
+      </div>
+      <button type="submit" class="btn kd-btn w-100 mt-2">
+        <i class="bi bi-box-arrow-in-right"></i> Login
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
