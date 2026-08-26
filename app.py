@@ -79,6 +79,10 @@ def dashboard():
 def _parse_form(fields):
     data = {}
     for f in fields:
+        if f["type"] == "checkbox":
+            # Unchecked checkboxes are omitted by browsers, so absence means False.
+            data[f["name"]] = request.form.get(f["name"]) is not None
+            continue
         value = request.form.get(f["name"], "").strip()
         if f["type"] == "number":
             try:
@@ -138,7 +142,9 @@ def delete_item(module, item_id):
 
 @app.route("/api/notices")
 def api_notices():
+    # Pinned notices first, newest first within each group.
     notices = list(db.notices.find().sort("_id", -1))
+    notices.sort(key=lambda n: not n.get("pinned", False))
     for n in notices:
         n["_id"] = str(n["_id"])
         n["created_at"] = n.get("created_at", "").isoformat() if n.get("created_at") else ""
