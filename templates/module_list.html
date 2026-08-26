@@ -10,9 +10,19 @@
       </a>
       <h3 class="mb-0 mt-1"><i class="bi {{ module.icon }}"></i> {{ module.label }}</h3>
     </div>
-    <button class="btn kd-btn" data-bs-toggle="modal" data-bs-target="#addModal">
-      <i class="bi bi-plus-lg"></i> Add New
-    </button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" onclick="window.print()">
+        <i class="bi bi-printer"></i> Print
+      </button>
+      <button class="btn kd-btn" data-bs-toggle="modal" data-bs-target="#addModal">
+        <i class="bi bi-plus-lg"></i> Add New
+      </button>
+    </div>
+  </div>
+
+  <div class="d-none d-print-block mb-3">
+    <h4 class="mb-0"><i class="bi {{ module.icon }}"></i> K.D. Hostel &mdash; {{ module.label }}</h4>
+    <small class="text-muted">Printed on <span id="printDate"></span></small>
   </div>
 
   <div class="table-responsive kd-table-wrap">
@@ -22,16 +32,22 @@
           {% for f in module.fields %}
           <th>{{ f.label }}</th>
           {% endfor %}
-          <th class="text-end">Actions</th>
+          <th class="text-end no-print">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for item in items %}
         <tr>
           {% for f in module.fields %}
-          <td>{{ item.get(f.name, '') }}</td>
+          <td>
+            {% if f.type == 'checkbox' %}
+              {% if item.get(f.name) %}<span class="badge bg-warning text-dark"><i class="bi bi-pin-angle-fill"></i> Yes</span>{% else %}&mdash;{% endif %}
+            {% else %}
+              {{ item.get(f.name, '') }}
+            {% endif %}
+          </td>
           {% endfor %}
-          <td class="text-end">
+          <td class="text-end no-print">
             <button class="btn btn-sm btn-outline-primary"
                     data-bs-toggle="modal" data-bs-target="#editModal-{{ item._id }}">
               <i class="bi bi-pencil"></i>
@@ -67,17 +83,24 @@
         <div class="modal-body">
           {% for f in module.fields %}
           <div class="mb-3">
-            <label class="form-label">{{ f.label }}</label>
-            {% if f.type == 'textarea' %}
-              <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
-            {% elif f.type == 'select' %}
-              <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
-                {% for choice in f.choices %}
-                <option value="{{ choice }}">{{ choice }}</option>
-                {% endfor %}
-              </select>
+            {% if f.type == 'checkbox' %}
+              <div class="form-check">
+                <input type="checkbox" name="{{ f.name }}" class="form-check-input" id="add-{{ f.name }}">
+                <label class="form-check-label" for="add-{{ f.name }}">{{ f.label }}</label>
+              </div>
             {% else %}
-              <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
+              <label class="form-label">{{ f.label }}</label>
+              {% if f.type == 'textarea' %}
+                <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
+              {% elif f.type == 'select' %}
+                <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
+                  {% for choice in f.choices %}
+                  <option value="{{ choice }}">{{ choice }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
+              {% endif %}
             {% endif %}
           </div>
           {% endfor %}
@@ -104,18 +127,26 @@
         <div class="modal-body">
           {% for f in module.fields %}
           <div class="mb-3">
-            <label class="form-label">{{ f.label }}</label>
-            {% if f.type == 'textarea' %}
-              <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}>{{ item.get(f.name, '') }}</textarea>
-            {% elif f.type == 'select' %}
-              <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
-                {% for choice in f.choices %}
-                <option value="{{ choice }}" {% if item.get(f.name) == choice %}selected{% endif %}>{{ choice }}</option>
-                {% endfor %}
-              </select>
+            {% if f.type == 'checkbox' %}
+              <div class="form-check">
+                <input type="checkbox" name="{{ f.name }}" class="form-check-input"
+                       id="edit-{{ f.name }}-{{ item._id }}" {% if item.get(f.name) %}checked{% endif %}>
+                <label class="form-check-label" for="edit-{{ f.name }}-{{ item._id }}">{{ f.label }}</label>
+              </div>
             {% else %}
-              <input type="{{ f.type }}" name="{{ f.name }}" class="form-control"
-                     value="{{ item.get(f.name, '') }}" {% if f.required %}required{% endif %}>
+              <label class="form-label">{{ f.label }}</label>
+              {% if f.type == 'textarea' %}
+                <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}>{{ item.get(f.name, '') }}</textarea>
+              {% elif f.type == 'select' %}
+                <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
+                  {% for choice in f.choices %}
+                  <option value="{{ choice }}" {% if item.get(f.name) == choice %}selected{% endif %}>{{ choice }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input type="{{ f.type }}" name="{{ f.name }}" class="form-control"
+                       value="{{ item.get(f.name, '') }}" {% if f.required %}required{% endif %}>
+              {% endif %}
             {% endif %}
           </div>
           {% endfor %}
@@ -130,4 +161,11 @@
 </div>
 {% endfor %}
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const printDateEl = document.getElementById('printDate');
+  if (printDateEl) printDateEl.textContent = new Date().toLocaleString();
+</script>
 {% endblock %}
