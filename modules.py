@@ -4,17 +4,24 @@
 
 MODULES = {
     "students": {
-        "label": "Student Registration",
-        "icon": "bi-person-badge",
-        "fields": [
-            {"name": "name", "label": "Full Name", "type": "text", "required": True},
-            {"name": "roll_no", "label": "Roll No.", "type": "text", "required": True},
-            {"name": "course", "label": "Course", "type": "text", "required": True},
-            {"name": "room_no", "label": "Room No.", "type": "text", "required": False},
-            {"name": "phone", "label": "Phone", "type": "text", "required": True},
-            {"name": "email", "label": "Email", "type": "email", "required": False},
-        ],
-    },
+    "label": "Student Registration",
+    "icon": "bi-person-badge",
+    "fields": [
+        {"name": "name", "label": "Full Name", "type": "text", "required": True},
+        {"name": "gender", "label": "Gender", "type": "text", "required": False},
+        {"name": "dob", "label": "Date of Birth", "type": "date", "required": False},
+        {"name": "phone", "label": "Mobile Number", "type": "text", "required": True},
+        {"name": "email", "label": "Email", "type": "email", "required": False},
+        {"name": "aadhar", "label": "Aadhar / ID Number", "type": "text", "required": False},
+        {"name": "course", "label": "Course / Branch", "type": "text", "required": True},
+        {"name": "year", "label": "Year / Semester", "type": "text", "required": False},
+        {"name": "roll_no", "label": "Enrollment No", "type": "text", "required": True},
+        {"name": "guardian", "label": "Guardian Name", "type": "text", "required": False},
+        {"name": "guardian_mobile", "label": "Guardian Mobile", "type": "text", "required": False},
+        {"name": "address", "label": "Address", "type": "textarea", "required": False},
+        {"name": "room_no", "label": "Room No.", "type": "text", "required": False},
+    ],
+},
     "rooms": {
         "label": "Smart Room Allocation",
         "icon": "bi-door-open",
