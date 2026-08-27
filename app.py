@@ -154,23 +154,27 @@ def api_notices():
 @app.route("/api/register", methods=["POST"])
 def api_register():
     payload = request.get_json(silent=True) or request.form
-
     student = {
         "name": (payload.get("name") or "").strip(),
-        "roll_no": (payload.get("roll_no") or "").strip(),
-        "course": (payload.get("course") or "").strip(),
-        "room_no": (payload.get("room_no") or "").strip(),
+        "gender": (payload.get("gender") or "").strip(),
+        "dob": (payload.get("dob") or "").strip(),
         "phone": (payload.get("phone") or "").strip(),
         "email": (payload.get("email") or "").strip(),
+        "aadhar": (payload.get("aadhar") or "").strip(),
+        "course": (payload.get("course") or "").strip(),
+        "year": (payload.get("year") or "").strip(),
+        "roll_no": (payload.get("roll_no") or "").strip(),
+        "guardian": (payload.get("guardian") or "").strip(),
+        "guardian_mobile": (payload.get("guardian_mobile") or "").strip(),
+        "address": (payload.get("address") or "").strip(),
+        "room_no": "",
         "created_at": datetime.utcnow(),
     }
-
     if not student["name"] or not student["roll_no"] or not student["phone"]:
-        return {"success": False, "message": "Name, Roll No. and Phone are required."}, 400
+        return {"success": False, "message": "Name, Enrollment No. and Mobile are required."}, 400
 
     result = db.students.insert_one(student)
     return {"success": True, "message": "Registration successful!", "id": str(result.inserted_id)}, 201
-
 
 @app.route("/setup-faculty-kdhostel2026")
 def setup_faculty():
