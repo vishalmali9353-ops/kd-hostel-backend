@@ -42,6 +42,12 @@
           <td>
             {% if f.type == 'checkbox' %}
               {% if item.get(f.name) %}<span class="badge bg-warning text-dark"><i class="bi bi-pin-angle-fill"></i> Yes</span>{% else %}&mdash;{% endif %}
+            {% elif f.type == 'file' %}
+              {% if item.get(f.name) %}
+                <a href="/static/uploads/{{ item.get(f.name) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                  <i class="bi bi-file-earmark-arrow-down"></i> View
+                </a>
+              {% else %}&mdash;{% endif %}
             {% else %}
               {{ item.get(f.name, '') }}
             {% endif %}
@@ -82,28 +88,29 @@
         </div>
         <div class="modal-body">
           {% for f in module.fields %}
-<div class="mb-3">
-  {% if f.type == 'checkbox' %}
-    <div class="form-check">
-      <input type="checkbox" name="{{ f.name }}" class="form-check-input" id="add-{{ f.name }}">
-      <label class="form-check-label" for="add-{{ f.name }}">{{ f.label }}</label>
-    </div>
-  {% else %}
-    <label class="form-label">{{ f.label }}</label>
-    {% if f.type == 'textarea' %}
-      <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
-    {% elif f.type == 'select' %}
-      <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
-        {% for choice in f.choices %}
-        <option value="{{ choice }}">{{ choice }}</option>
-        {% endfor %}
-      </select>
-    {% else %}
-      <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
-    {% endif %}
-  {% endif %}
-</div>
-{% endfor %}
+          <div class="mb-3">
+            {% if f.type == 'checkbox' %}
+              <div class="form-check">
+                <input type="checkbox" name="{{ f.name }}" class="form-check-input" id="add-{{ f.name }}">
+                <label class="form-check-label" for="add-{{ f.name }}">{{ f.label }}</label>
+              </div>
+            {% else %}
+              <label class="form-label">{{ f.label }}</label>
+              {% if f.type == 'textarea' %}
+                <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
+              {% elif f.type == 'select' %}
+                <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
+                  {% for choice in f.choices %}
+                  <option value="{{ choice }}">{{ choice }}</option>
+                  {% endfor %}
+                </select>
+              {% elif f.type == 'file' %}
+                <input type="file" name="{{ f.name }}" class="form-control" accept=".pdf,.ppt,.pptx,.doc,.docx,.jpg,.jpeg,.png" {% if f.required %}required{% endif %}>
+              {% else %}
+                <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
+              {% endif %}
+            {% endif %}
+          </div>
           {% endfor %}
         </div>
         <div class="modal-footer">
@@ -120,7 +127,7 @@
 <div class="modal fade" id="editModal-{{ item._id }}" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" action="{{ url_for('edit_item', module=module_key, item_id=item._id) }}">
+      <form method="POST" action="{{ url_for('edit_item', module=module_key, item_id=item._id) }}" enctype="multipart/form-data">
         <div class="modal-header kd-modal-header">
           <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit {{ module.label }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -144,6 +151,14 @@
                   <option value="{{ choice }}" {% if item.get(f.name) == choice %}selected{% endif %}>{{ choice }}</option>
                   {% endfor %}
                 </select>
+              {% elif f.type == 'file' %}
+                <input type="file" name="{{ f.name }}" class="form-control" accept=".pdf,.ppt,.pptx,.doc,.docx,.jpg,.jpeg,.png">
+                {% if item.get(f.name) %}
+                  <small class="text-muted d-block mt-1">
+                    Current: <a href="/static/uploads/{{ item.get(f.name) }}" target="_blank">{{ item.get(f.name) }}</a>
+                    (leave empty to keep existing file)
+                  </small>
+                {% endif %}
               {% else %}
                 <input type="{{ f.type }}" name="{{ f.name }}" class="form-control"
                        value="{{ item.get(f.name, '') }}" {% if f.required %}required{% endif %}>
