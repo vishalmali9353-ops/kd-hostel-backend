@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from bson.objectid import ObjectId
@@ -9,6 +10,7 @@ from flask_login import (
 )
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 from config import Config
 from modules import MODULES
@@ -24,6 +26,11 @@ db = mongo.db
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Please login to access the faculty panel."
+
+# --- File upload setup ---
+UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXT = {"pdf", "ppt", "pptx", "doc", "docx", "jpg", "jpeg", "png"}
 
 
 class AdminUser(UserMixin):
@@ -83,6 +90,9 @@ def _parse_form(fields):
             # Unchecked checkboxes are omitted by browsers, so absence means False.
             data[f["name"]] = request.form.get(f["name"]) is not None
             continue
+        if f["type"] == "file":
+            # Files are handled separately in _handle_file_upload
+            continue
         value = request.form.get(f["name"], "").strip()
         if f["type"] == "number":
             try:
@@ -91,6 +101,21 @@ def _parse_form(fields):
                 value = 0
         data[f["name"]] = value
     return data
+
+
+def _handle_file_upload(fields):
+    """Saves any uploaded file fields, returns dict of {field_name: saved_filename}."""
+    saved = {}
+    for f in fields:
+        if f["type"] == "file":
+            file = request.files.get(f["name"])
+            if file and file.filename:
+                ext = file.filename.rsplit(".", 1)[-1].lower()
+                if ext in ALLOWED_EXT:
+                    filename = secure_filename(f"{int(datetime.utcnow().timestamp())}_{file.filename}")
+                    file.save(os.path.join(UPLOAD_FOLDER, filename))
+                    saved[f["name"]] = filename
+    return saved
 
 
 @app.route("/admin/<module>")
@@ -113,6 +138,7 @@ def add_item(module):
     if module not in MODULES:
         abort(404)
     data = _parse_form(MODULES[module]["fields"])
+    data.update(_handle_file_upload(MODULES[module]["fields"]))
     data["created_at"] = datetime.utcnow()
     db[module].insert_one(data)
     flash(f"{MODULES[module]['label']} record added.", "success")
@@ -125,6 +151,8 @@ def edit_item(module, item_id):
     if module not in MODULES:
         abort(404)
     data = _parse_form(MODULES[module]["fields"])
+    uploaded = _handle_file_upload(MODULES[module]["fields"])
+    data.update(uploaded)
     db[module].update_one({"_id": ObjectId(item_id)}, {"$set": data})
     flash(f"{MODULES[module]['label']} record updated.", "success")
     return redirect(url_for("list_items", module=module))
@@ -148,6 +176,8 @@ def api_notices():
     for n in notices:
         n["_id"] = str(n["_id"])
         n["created_at"] = n.get("created_at", "").isoformat() if n.get("created_at") else ""
+        if n.get("document"):
+            n["document_url"] = f"/static/uploads/{n['document']}"
     return {"notices": notices}
 
 
