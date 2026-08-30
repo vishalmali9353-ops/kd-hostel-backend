@@ -114,3 +114,12 @@ body {
   .table thead { background: #e9ecef !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .table thead th { color: #000 !important; }
 }
+.modal-body .form-label {
+  color: var(--kd-navy) !important;
+  font-weight: 600;
+}
+.modal-body .form-control,
+.modal-body .form-select {
+  color: #1a1a1a !important;
+  background-color: #fff !important;
+}
