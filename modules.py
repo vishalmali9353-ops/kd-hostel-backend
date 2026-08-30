@@ -83,6 +83,6 @@ MODULES = {
              "choices": ["General", "Academic", "Exam", "Event", "Hostel Rules", "Urgent"],
              "required": True},
             {"name": "pinned", "label": "Pin to Top", "type": "checkbox", "required": False},
-        ],
+        {"name": "document", "label": "Document (PDF / PPT / Word / Photo) - Optional", "type": "file", "required": False},],
     },
 }
