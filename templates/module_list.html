@@ -75,34 +75,35 @@
 <div class="modal fade" id="addModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" action="{{ url_for('add_item', module=module_key) }}">
+    <form method="POST" action="{{ url_for('add_item', module=module_key) }}" enctype="multipart/form-data">
         <div class="modal-header kd-modal-header">
           <h5 class="modal-title"><i class="bi bi-plus-lg"></i> Add {{ module.label }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           {% for f in module.fields %}
-          <div class="mb-3">
-            {% if f.type == 'checkbox' %}
-              <div class="form-check">
-                <input type="checkbox" name="{{ f.name }}" class="form-check-input" id="add-{{ f.name }}">
-                <label class="form-check-label" for="add-{{ f.name }}">{{ f.label }}</label>
-              </div>
-            {% else %}
-              <label class="form-label">{{ f.label }}</label>
-              {% if f.type == 'textarea' %}
-                <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
-              {% elif f.type == 'select' %}
-                <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
-                  {% for choice in f.choices %}
-                  <option value="{{ choice }}">{{ choice }}</option>
-                  {% endfor %}
-                </select>
-              {% else %}
-                <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
-              {% endif %}
-            {% endif %}
-          </div>
+<div class="mb-3">
+  {% if f.type == 'checkbox' %}
+    <div class="form-check">
+      <input type="checkbox" name="{{ f.name }}" class="form-check-input" id="add-{{ f.name }}">
+      <label class="form-check-label" for="add-{{ f.name }}">{{ f.label }}</label>
+    </div>
+  {% else %}
+    <label class="form-label">{{ f.label }}</label>
+    {% if f.type == 'textarea' %}
+      <textarea name="{{ f.name }}" class="form-control" rows="3" {% if f.required %}required{% endif %}></textarea>
+    {% elif f.type == 'select' %}
+      <select name="{{ f.name }}" class="form-select" {% if f.required %}required{% endif %}>
+        {% for choice in f.choices %}
+        <option value="{{ choice }}">{{ choice }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <input type="{{ f.type }}" name="{{ f.name }}" class="form-control" {% if f.required %}required{% endif %}>
+    {% endif %}
+  {% endif %}
+</div>
+{% endfor %}
           {% endfor %}
         </div>
         <div class="modal-footer">
