@@ -28,12 +28,12 @@
   <div class="table-responsive kd-table-wrap">
     <table class="table table-hover align-middle mb-0">
       <thead>
-        <tr>
-          {% for f in module.fields %}
-          <th>{{ f.label }}</th>
-          {% endfor %}
-          <th class="text-end no-print">Actions</th>
-        </tr>
+  <tr>
+    {% for f in module.fields %}
+    <th style="color:#1d5fd6; background:#f0f4ff;">{{ f.label }}</th>
+    {% endfor %}
+    <th class="text-end no-print" style="color:#1d5fd6; background:#f0f4ff;">Actions</th>
+  </tr>
       </thead>
       <tbody>
         {% for item in items %}
