@@ -25,19 +25,53 @@
     <small class="text-muted">Printed on <span id="printDate"></span></small>
   </div>
 
+  <!-- Filter bar -->
+  <div class="kd-filter-bar mb-3 no-print">
+    <div class="row g-2">
+      {% for f in module.fields %}
+      <div class="col-6 col-md-3">
+        {% if f.type == 'select' %}
+          <select class="form-select form-select-sm kd-filter-input" data-col="{{ loop.index0 }}">
+            <option value="">All {{ f.label }}</option>
+            {% for choice in f.choices %}
+            <option value="{{ choice|lower }}">{{ choice }}</option>
+            {% endfor %}
+          </select>
+        {% elif f.type == 'checkbox' %}
+          <select class="form-select form-select-sm kd-filter-input" data-col="{{ loop.index0 }}">
+            <option value="">All {{ f.label }}</option>
+            <option value="yes">Yes</option>
+            <option value="—">No</option>
+          </select>
+        {% elif f.type == 'file' %}
+          <!-- no filter for file fields -->
+        {% else %}
+          <input type="text" class="form-control form-control-sm kd-filter-input"
+                 data-col="{{ loop.index0 }}" placeholder="Search {{ f.label }}">
+        {% endif %}
+      </div>
+      {% endfor %}
+      <div class="col-6 col-md-3">
+        <button class="btn btn-sm btn-outline-secondary w-100" id="clearFiltersBtn">
+          <i class="bi bi-x-circle"></i> Clear Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="table-responsive kd-table-wrap">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover align-middle mb-0" id="dataTable">
       <thead>
-  <tr>
-    {% for f in module.fields %}
-    <th style="color:#1d5fd6; background:#f0f4ff;">{{ f.label }}</th>
-    {% endfor %}
-    <th class="text-end no-print" style="color:#1d5fd6; background:#f0f4ff;">Actions</th>
-  </tr>
+        <tr>
+          {% for f in module.fields %}
+          <th data-sort="{{ loop.index0 }}">{{ f.label }} <i class="bi bi-arrow-down-up small opacity-50"></i></th>
+          {% endfor %}
+          <th class="text-end no-print">Actions</th>
+        </tr>
       </thead>
       <tbody>
         {% for item in items %}
-        <tr>
+        <tr data-row>
           {% for f in module.fields %}
           <td>
             {% if f.type == 'checkbox' %}
@@ -74,6 +108,9 @@
         {% endfor %}
       </tbody>
     </table>
+    <div id="noMatchMsg" class="text-center text-muted py-4" style="display:none;">
+      No records match your filters.
+    </div>
   </div>
 </div>
 
@@ -183,5 +220,75 @@
 <script>
   const printDateEl = document.getElementById('printDate');
   if (printDateEl) printDateEl.textContent = new Date().toLocaleString();
+
+  // ---- Filtering + Sorting ----
+  document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('dataTable');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    const headers = table.querySelectorAll('thead th[data-sort]');
+    const filterInputs = document.querySelectorAll('.kd-filter-input');
+    const noMatchMsg = document.getElementById('noMatchMsg');
+
+    function applyFilters() {
+      const rows = tbody.querySelectorAll('tr[data-row]');
+      let visibleCount = 0;
+      rows.forEach(row => {
+        let visible = true;
+        filterInputs.forEach(input => {
+          const colIndex = input.dataset.col;
+          const val = input.value.trim().toLowerCase();
+          if (!val) return;
+          const cell = row.children[colIndex];
+          const cellText = cell ? cell.textContent.trim().toLowerCase() : '';
+          if (input.tagName === 'SELECT') {
+            if (cellText !== val) visible = false;
+          } else {
+            if (!cellText.includes(val)) visible = false;
+          }
+        });
+        row.style.display = visible ? '' : 'none';
+        if (visible) visibleCount++;
+      });
+      noMatchMsg.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+    }
+
+    filterInputs.forEach(inp => inp.addEventListener('input', applyFilters));
+
+    document.getElementById('clearFiltersBtn')?.addEventListener('click', () => {
+      filterInputs.forEach(inp => inp.value = '');
+      applyFilters();
+    });
+
+    let sortState = {};
+    headers.forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const colIndex = th.dataset.sort;
+        const asc = !sortState[colIndex];
+        sortState = {};
+        sortState[colIndex] = asc;
+
+        const rows = Array.from(tbody.querySelectorAll('tr[data-row]'));
+        rows.sort((a, b) => {
+          const av = a.children[colIndex].textContent.trim().toLowerCase();
+          const bv = b.children[colIndex].textContent.trim().toLowerCase();
+          const an = parseFloat(av), bn = parseFloat(bv);
+          if (!isNaN(an) && !isNaN(bn) && av !== '' && bv !== '') {
+            return asc ? an - bn : bn - an;
+          }
+          return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        rows.forEach(r => tbody.appendChild(r));
+
+        headers.forEach(h => {
+          const icon = h.querySelector('i');
+          icon.className = 'bi bi-arrow-down-up small opacity-50';
+        });
+        const activeIcon = th.querySelector('i');
+        activeIcon.className = `bi ${asc ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up'} small`;
+      });
+    });
+  });
 </script>
 {% endblock %}
