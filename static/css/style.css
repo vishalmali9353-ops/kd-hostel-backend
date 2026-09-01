@@ -123,3 +123,42 @@ body {
   color: #1a1a1a !important;
   background-color: #fff !important;
 }
+/* Table header layout: label + sort buttons + search box */
+.kd-th-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+}
+.kd-th-label{
+  cursor:pointer;
+  user-select:none;
+}
+.kd-th-label:hover{
+  text-decoration:underline;
+}
+.kd-sort-btns{
+  display:flex;
+  flex-direction:column;
+  line-height:0.6;
+}
+.kd-sort-btn{
+  cursor:pointer;
+  font-size:0.6rem;
+  color:#ccc;
+}
+.kd-sort-btn:hover{
+  color:var(--kd-gold);
+}
+.kd-col-search{
+  margin-top:6px;
+  font-weight:400;
+}
+
+/* Force black text everywhere in table body */
+.table tbody td{
+  color:#1a1a1a !important;
+}
+.table thead th{
+  color:#fff !important;
+}
