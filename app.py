@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+import cloudinary
+import cloudinary.uploader
 from bson.objectid import ObjectId
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_pymongo import PyMongo
@@ -10,7 +12,6 @@ from flask_login import (
 )
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 
 from config import Config
 from modules import MODULES
@@ -27,9 +28,13 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Please login to access the faculty panel."
 
-# --- File upload setup ---
-UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# --- Cloudinary setup (permanent file storage) ---
+cloudinary.config(
+    cloud_name=app.config["CLOUDINARY_CLOUD_NAME"],
+    api_key=app.config["CLOUDINARY_API_KEY"],
+    api_secret=app.config["CLOUDINARY_API_SECRET"],
+)
+
 ALLOWED_EXT = {"pdf", "ppt", "pptx", "doc", "docx", "jpg", "jpeg", "png"}
 
 
@@ -87,11 +92,9 @@ def _parse_form(fields):
     data = {}
     for f in fields:
         if f["type"] == "checkbox":
-            # Unchecked checkboxes are omitted by browsers, so absence means False.
             data[f["name"]] = request.form.get(f["name"]) is not None
             continue
         if f["type"] == "file":
-            # Files are handled separately in _handle_file_upload
             continue
         value = request.form.get(f["name"], "").strip()
         if f["type"] == "number":
@@ -104,7 +107,7 @@ def _parse_form(fields):
 
 
 def _handle_file_upload(fields):
-    """Saves any uploaded file fields, returns dict of {field_name: saved_filename}."""
+    """Uploads any file fields to Cloudinary, returns dict of {field_name: secure_url}."""
     saved = {}
     for f in fields:
         if f["type"] == "file":
@@ -112,9 +115,12 @@ def _handle_file_upload(fields):
             if file and file.filename:
                 ext = file.filename.rsplit(".", 1)[-1].lower()
                 if ext in ALLOWED_EXT:
-                    filename = secure_filename(f"{int(datetime.utcnow().timestamp())}_{file.filename}")
-                    file.save(os.path.join(UPLOAD_FOLDER, filename))
-                    saved[f["name"]] = filename
+                    result = cloudinary.uploader.upload(
+                        file,
+                        resource_type="auto",
+                        folder="kd_hostel_notices",
+                    )
+                    saved[f["name"]] = result["secure_url"]
     return saved
 
 
@@ -170,14 +176,13 @@ def delete_item(module, item_id):
 
 @app.route("/api/notices")
 def api_notices():
-    # Pinned notices first, newest first within each group.
     notices = list(db.notices.find().sort("_id", -1))
     notices.sort(key=lambda n: not n.get("pinned", False))
     for n in notices:
         n["_id"] = str(n["_id"])
         n["created_at"] = n.get("created_at", "").isoformat() if n.get("created_at") else ""
         if n.get("document"):
-            n["document_url"] = f"/static/uploads/{n['document']}"
+            n["document_url"] = n["document"]  # Cloudinary already returns full URL
     return {"notices": notices}
 
 
