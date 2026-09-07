@@ -53,7 +53,7 @@
               {% if item.get(f.name) %}<span class="badge bg-warning text-dark"><i class="bi bi-pin-angle-fill"></i> Yes</span>{% else %}&mdash;{% endif %}
             {% elif f.type == 'file' %}
               {% if item.get(f.name) %}
-                <a href="/static/uploads/{{ item.get(f.name) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ item.get(f.name) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-file-earmark-arrow-down"></i> View
                 </a>
               {% else %}&mdash;{% endif %}
@@ -167,7 +167,7 @@
                 <input type="file" name="{{ f.name }}" class="form-control" accept=".pdf,.ppt,.pptx,.doc,.docx,.jpg,.jpeg,.png">
                 {% if item.get(f.name) %}
                   <small class="text-muted d-block mt-1">
-                    Current: <a href="/static/uploads/{{ item.get(f.name) }}" target="_blank">{{ item.get(f.name) }}</a>
+                    Current: <a href="{{ item.get(f.name) }}" target="_blank">Document</a>
                     (leave empty to keep existing file)
                   </small>
                 {% endif %}
@@ -207,7 +207,6 @@
       label.addEventListener('click', () => {
         const col = label.dataset.col;
         const input = document.querySelector(`.kd-col-search[data-col="${col}"]`);
-        // hide all other search boxes first
         document.querySelectorAll('.kd-col-search').forEach(i => {
           if (i !== input) { i.classList.add('d-none'); i.value = ''; }
         });
