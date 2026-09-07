@@ -115,12 +115,15 @@ def _handle_file_upload(fields):
             if file and file.filename:
                 ext = file.filename.rsplit(".", 1)[-1].lower()
                 if ext in ALLOWED_EXT:
-                    result = cloudinary.uploader.upload(
-                        file,
-                        resource_type="auto",
-                        folder="kd_hostel_notices",
-                    )
-                    saved[f["name"]] = result["secure_url"]
+                    try:
+                        result = cloudinary.uploader.upload(
+                            file,
+                            resource_type="auto",
+                            folder="kd_hostel_notices",
+                        )
+                        saved[f["name"]] = result["secure_url"]
+                    except Exception as e:
+                        flash(f"Document upload failed: {str(e)}. Record saved without document.", "warning")
     return saved
 
 
